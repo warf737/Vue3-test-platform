@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
+import { getModuleRoutes as getValidateUsersListRoutes } from '@/views/Solutions/solutions/UsersList/router/index'
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -16,6 +18,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'solutions-detail',
     component: () => import('@/views/Solutions/SolutionDetailView.vue'),
     props: true,
+    children: [...getValidateUsersListRoutes()],
   },
   {
     path: '/tasks',

@@ -18,7 +18,7 @@ export const solutionsData: ISolutionData[] = [
     status: 'completed',
     createdAt: '2026-02-06',
     solution: {
-      moduleName: 'ValidateUsersList',
+      moduleName: 'UsersList',
     },
   },
 ]
