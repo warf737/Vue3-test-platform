@@ -4,17 +4,17 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/projects',
+    redirect: '/solutions',
   },
   {
-    path: '/projects',
-    name: 'projects',
-    component: () => import('../views/Projects/ProjectsView.vue'),
+    path: '/solutions',
+    name: 'solutions',
+    component: () => import('@/views/Solutions/SolutionsView.vue'),
   },
   {
-    path: '/projects/:id',
-    name: 'project-detail',
-    component: () => import('../views/Projects/ProjectDetailView.vue'),
+    path: '/solutions/:id',
+    name: 'solutions-detail',
+    component: () => import('@/views/Solutions/SolutionDetailView.vue'),
     props: true,
   },
   {

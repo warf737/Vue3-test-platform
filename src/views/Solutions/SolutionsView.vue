@@ -4,19 +4,8 @@
     <p>Выберите задачу, чтобы посмотреть её решение</p>
 
     <el-row :gutter="20" style="margin-top: 20px">
-      <el-col
-        v-for="project in projects"
-        :key="project.id"
-        :xs="24"
-        :sm="12"
-        :md="8"
-        :lg="6"
-      >
-        <el-card
-          class="project-card"
-          shadow="hover"
-          @click="goToProject(project.id)"
-        >
+      <el-col v-for="project in projects" :key="project.id" :xs="24" :sm="12" :md="8" :lg="6">
+        <el-card class="project-card" shadow="hover" @click="goToProject(project.id)">
           <template #header>
             <div class="card-header">
               <span>{{ project.title }}</span>

@@ -8,6 +8,7 @@
       <template #header>
         <div class="card-header">
           <h2>{{ task.title }}</h2>
+          <el-button @click="gotoSolution">Перейти к решению</el-button>
         </div>
       </template>
 
@@ -22,14 +23,6 @@
           </el-card>
         </el-form-item>
 
-        <!--        <el-form-item v-if="taskForm.requirements" label="Требования">-->
-        <!--          <ul class="requirements-list">-->
-        <!--            <li v-for="(req, index) in taskForm.requirements" :key="index">-->
-        <!--              {{ req }}-->
-        <!--            </li>-->
-        <!--          </ul>-->
-        <!--        </el-form-item>-->
-
         <el-form-item v-if="taskForm.examples" label="Примеры">
           <el-card shadow="never" style="background-color: #f5f7fa">
             <pre>{{ taskForm.examples }}</pre>
@@ -39,8 +32,7 @@
         <el-divider />
 
         <el-form-item>
-          <el-button type="primary" @click="handleStart"> Начать выполнение </el-button>
-          <el-button @click="goBack">Отмена</el-button>
+          <el-button @click="gotoSolution">Перейти к решению</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -53,7 +45,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 import { tasksData } from './constants.ts'
 import type { ITaskData } from '@/interfaces/tasks.ts'
 import { typography as tp } from '@/utils/typography'
@@ -61,6 +52,7 @@ import { typography as tp } from '@/utils/typography'
 const router = useRouter()
 const route = useRoute()
 const task = ref<ITaskData | null>(null)
+const taskId = ref<number>(Number(route.params.id))
 
 const taskForm = reactive({
   title: '',
@@ -70,8 +62,7 @@ const taskForm = reactive({
 })
 
 onMounted(() => {
-  const taskId = Number(route.params.id)
-  const foundTask = tasksData.find(t => t.id === taskId)
+  const foundTask = tasksData.find(t => t.id === taskId.value)
 
   if (foundTask) {
     task.value = foundTask
@@ -86,9 +77,8 @@ const goBack = () => {
   router.push('/tasks')
 }
 
-const handleStart = () => {
-  ElMessage.success('Задание принято к выполнению!')
-  // Здесь можно добавить логику начала выполнения задания
+const gotoSolution = () => {
+  router.push(`/solutions/${taskId.value}`)
 }
 </script>
 
@@ -96,6 +86,11 @@ const handleStart = () => {
 .task-detail {
   max-width: 900px;
   margin: 0 auto;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .card-header h2 {

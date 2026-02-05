@@ -12,5 +12,5 @@ export interface ITaskData {
   stack: string[]
   description: string
   requirements?: string[]
-  examples?: string
+  examples?: null | string
 }
