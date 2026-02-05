@@ -3,12 +3,7 @@
     <el-header>
       <div class="header-content">
         <h1>Vue 3 test projects</h1>
-        <el-menu
-          mode="horizontal"
-          :default-active="activeIndex"
-          class="header-menu"
-          @select="handleMenuSelect"
-        >
+        <el-menu mode="horizontal" :default-active="activeIndex" class="header-menu">
           <el-menu-item index="solutions">
             <router-link to="/solutions">Решения</router-link>
           </el-menu-item>
@@ -40,10 +35,6 @@ const activeIndex = computed(() => {
   if (path.startsWith('/about')) return 'about'
   return 'projects'
 })
-
-const handleMenuSelect = (key: string) => {
-  // Навигация обрабатывается через router-link
-}
 </script>
 
 <style>

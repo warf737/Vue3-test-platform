@@ -40,11 +40,6 @@
               style="margin-bottom: 20px"
             />
 
-            <!-- Динамическая загрузка модуля решения -->
-            <solution-module-loader
-              v-if="solution.solution.moduleName"
-              :module-name="solution.solution.moduleName"
-            />
             <!-- Router view для nested routes модуля -->
             <router-view v-if="solution.solution.moduleName" />
 
@@ -79,7 +74,6 @@ import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { solutionsData } from '@/views/Solutions/constants.ts'
 import type { ISolutionData } from '@/interfaces/solutions.ts'
-import solutionModuleLoader from '@/components/SolutionModuleLoader/SolutionModuleLoader.vue'
 
 const router = useRouter()
 const route = useRoute()

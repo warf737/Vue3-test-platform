@@ -4,7 +4,7 @@ export const routes: Array<RouteRecordRaw> = [
   {
     path: '',
     name: 'users-list-home',
-    component: () => import('../views/HomeView.vue'),
+    component: () => import('../views/UserListView.vue'),
   },
   {
     path: 'create',
