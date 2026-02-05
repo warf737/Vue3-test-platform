@@ -4,67 +4,34 @@
     <p>Выберите задачу, чтобы посмотреть её решение</p>
 
     <el-row :gutter="20" style="margin-top: 20px">
-      <el-col v-for="project in projects" :key="project.id" :xs="24" :sm="12" :md="8" :lg="6">
-        <el-card class="project-card" shadow="hover" @click="goToProject(project.id)">
+      <el-col v-for="solution in solutions" :key="solution.id" :xs="24" :sm="12" :md="8" :lg="6">
+        <card shadow="hover" @click="goToSolution(solution.id)">
           <template #header>
             <div class="card-header">
-              <span>{{ project.title }}</span>
+              <span>{{ solution.title }}</span>
             </div>
           </template>
           <div class="card-body">
-            <p>{{ project.description }}</p>
-            <el-tag :type="project.status === 'completed' ? 'success' : 'info'">
-              {{ project.status === 'completed' ? 'Готово' : 'В работе' }}
+            <p>{{ solution.description }}</p>
+            <el-tag :type="solution.status === 'completed' ? 'success' : 'info'">
+              {{ solution.status === 'completed' ? 'Готово' : 'В работе' }}
             </el-tag>
           </div>
-        </el-card>
+        </card>
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { solutions } from './constants.ts'
 import { useRouter } from 'vue-router'
-
-interface Project {
-  id: number
-  title: string
-  description: string
-  status: 'completed' | 'in-progress'
-}
+import Card from '@/components/Card/Card.vue'
 
 const router = useRouter()
 
-const projects = ref<Project[]>([
-  {
-    id: 1,
-    title: 'Задача 1: Форма входа',
-    description: 'Создание формы входа с валидацией',
-    status: 'completed',
-  },
-  {
-    id: 2,
-    title: 'Задача 2: Список пользователей',
-    description: 'Отображение списка пользователей с фильтрацией',
-    status: 'completed',
-  },
-  {
-    id: 3,
-    title: 'Задача 3: Дашборд',
-    description: 'Создание информационной панели с графиками',
-    status: 'in-progress',
-  },
-  {
-    id: 4,
-    title: 'Задача 4: API интеграция',
-    description: 'Интеграция с внешним API для получения данных',
-    status: 'completed',
-  },
-])
-
-const goToProject = (id: number) => {
-  router.push(`/projects/${id}`)
+const goToSolution = (id: number) => {
+  router.push(`/solutions/${id}`)
 }
 </script>
 

@@ -9,8 +9,8 @@
           class="header-menu"
           @select="handleMenuSelect"
         >
-          <el-menu-item index="projects">
-            <router-link to="/projects">Проекты</router-link>
+          <el-menu-item index="solutions">
+            <router-link to="/solutions">Решения</router-link>
           </el-menu-item>
           <el-menu-item index="tasks">
             <router-link to="/tasks">Задания</router-link>

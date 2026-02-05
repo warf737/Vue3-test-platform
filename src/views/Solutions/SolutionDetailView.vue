@@ -1,28 +1,28 @@
 <template>
   <div class="project-detail">
-    <el-button @click="goBack" :icon="ArrowLeft" style="margin-bottom: 20px">
+    <el-button :icon="ArrowLeft" style="margin-bottom: 20px" @click="goBack">
       Назад к проектам
     </el-button>
 
-    <el-card v-if="project">
+    <el-card v-if="solution">
       <template #header>
         <div class="card-header">
-          <h2>{{ project.title }}</h2>
+          <h2>{{ solution.title }}</h2>
         </div>
       </template>
 
       <div class="project-content">
         <el-descriptions :column="1" border>
           <el-descriptions-item label="Описание">
-            {{ project.description }}
+            {{ solution.description }}
           </el-descriptions-item>
           <el-descriptions-item label="Статус">
-            <el-tag :type="project.status === 'completed' ? 'success' : 'info'">
-              {{ project.status === 'completed' ? 'Готово' : 'В работе' }}
+            <el-tag :type="solution.status === 'completed' ? 'success' : 'info'">
+              {{ solution.status === 'completed' ? 'Готово' : 'В работе' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="Дата создания">
-            {{ project.createdAt }}
+            {{ solution.createdAt }}
           </el-descriptions-item>
         </el-descriptions>
 
@@ -32,26 +32,38 @@
           <h3>Решение</h3>
           <div class="solution-content">
             <el-alert
-              :title="project.solution.title"
-              :description="project.solution.description"
+              v-if="solution.solution.title"
+              :title="solution.solution.title"
+              :description="solution.solution.description"
               type="success"
               :closable="false"
               style="margin-bottom: 20px"
             />
 
-            <div v-if="project.solution.code" class="code-section">
-              <h4>Пример кода:</h4>
-              <pre><code>{{ project.solution.code }}</code></pre>
-            </div>
+            <!-- Динамическая загрузка модуля решения -->
+            <solution-module-loader
+              v-if="solution.solution.moduleName"
+              :module-name="solution.solution.moduleName"
+            />
+            <!-- Router view для nested routes модуля -->
+            <router-view v-if="solution.solution.moduleName" />
 
-            <div v-if="project.solution.features" class="features-section">
-              <h4>Реализованные функции:</h4>
-              <ul>
-                <li v-for="feature in project.solution.features" :key="feature">
-                  {{ feature }}
-                </li>
-              </ul>
-            </div>
+            <!-- Fallback: текстовое описание, если модуль не указан -->
+            <template v-else>
+              <div v-if="solution.solution.code" class="code-section">
+                <h4>Пример кода:</h4>
+                <pre><code>{{ solution.solution.code }}</code></pre>
+              </div>
+
+              <div v-if="solution.solution.features" class="features-section">
+                <h4>Реализованные функции:</h4>
+                <ul>
+                  <li v-for="feature in solution.solution.features" :key="feature">
+                    {{ feature }}
+                  </li>
+                </ul>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -62,113 +74,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
-
-interface Project {
-  id: number
-  title: string
-  description: string
-  status: 'completed' | 'in-progress'
-  createdAt: string
-  solution: {
-    title: string
-    description: string
-    code?: string
-    features?: string[]
-  }
-}
+import { solutionsData } from '@/views/Solutions/constants.ts'
+import type { ISolutionData } from '@/interfaces/solutions.ts'
+import solutionModuleLoader from '@/components/SolutionModuleLoader/SolutionModuleLoader.vue'
 
 const router = useRouter()
 const route = useRoute()
-const project = ref<Project | null>(null)
-
-const projectsData: Project[] = [
-  {
-    id: 1,
-    title: 'Задача 1: Форма входа',
-    description: 'Создание формы входа с валидацией',
-    status: 'completed',
-    createdAt: '2024-01-15',
-    solution: {
-      title: 'Решение реализовано',
-      description:
-        'Форма входа создана с использованием Element Plus компонентов. Реализована валидация полей email и пароля.',
-      code: `// Пример валидации формы
-const validateEmail = (email: string) => {
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)
-}`,
-      features: [
-        'Валидация email',
-        'Валидация пароля (минимум 8 символов)',
-        'Обработка ошибок',
-        'Анимация загрузки',
-      ],
-    },
-  },
-  {
-    id: 2,
-    title: 'Задача 2: Список пользователей',
-    description: 'Отображение списка пользователей с фильтрацией',
-    status: 'completed',
-    createdAt: '2024-01-20',
-    solution: {
-      title: 'Решение реализовано',
-      description:
-        'Создан компонент списка пользователей с возможностью фильтрации по имени и email.',
-      features: [
-        'Отображение списка пользователей',
-        'Поиск по имени',
-        'Фильтрация по статусу',
-        'Пагинация',
-      ],
-    },
-  },
-  {
-    id: 3,
-    title: 'Задача 3: Дашборд',
-    description: 'Создание информационной панели с графиками',
-    status: 'in-progress',
-    createdAt: '2024-02-01',
-    solution: {
-      title: 'В разработке',
-      description: 'Дашборд находится в стадии разработки. Планируется интеграция с библиотекой графиков.',
-      features: ['Базовая структура', 'Макет компонентов'],
-    },
-  },
-  {
-    id: 4,
-    title: 'Задача 4: API интеграция',
-    description: 'Интеграция с внешним API для получения данных',
-    status: 'completed',
-    createdAt: '2024-02-10',
-    solution: {
-      title: 'Решение реализовано',
-      description:
-        'Реализована интеграция с REST API. Использованы axios для HTTP запросов и Pinia для управления состоянием.',
-      code: `// Пример API запроса
-const fetchData = async () => {
-  const response = await axios.get('/api/data')
-  return response.data
-}`,
-      features: [
-        'HTTP запросы через axios',
-        'Обработка ошибок',
-        'Кэширование данных',
-        'Обновление состояния через Pinia',
-      ],
-    },
-  },
-]
+const solution = ref<ISolutionData | null>(null)
 
 onMounted(() => {
   const projectId = Number(route.params.id)
-  project.value = projectsData.find((p) => p.id === projectId) || null
+  solution.value = solutionsData.find(p => p.id === projectId) || null
 })
 
 const goBack = () => {
-  router.push('/projects')
+  router.push('/solutions')
 }
 </script>
 
