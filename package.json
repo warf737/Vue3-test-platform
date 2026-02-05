@@ -17,6 +17,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "element-plus": "^2.13.2",
     "pinia": "^3.0.4",
+    "typograf": "^6.11.0",
     "vue": "^3.5.27",
     "vue-router": "^5.0.1"
   },
