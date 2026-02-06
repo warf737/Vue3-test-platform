@@ -8,6 +8,7 @@
       <template #header>
         <div class="card-header">
           <h2>{{ solution.title }}</h2>
+          <el-button @click="gotoTask">Перейти к задаче</el-button>
         </div>
       </template>
 
@@ -15,11 +16,6 @@
         <el-descriptions :column="1" border>
           <el-descriptions-item label="Описание">
             {{ solution.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="Статус">
-            <el-tag :type="solution.status === 'completed' ? 'success' : 'info'">
-              {{ solution.status === 'completed' ? 'Готово' : 'В работе' }}
-            </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="Дата создания">
             {{ solution.createdAt }}
@@ -72,20 +68,25 @@
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import { solutionsData } from '@/views/Solutions/constants.ts'
+import { solutions } from './constants.ts'
 import type { ISolutionData } from '@/interfaces/solutions.ts'
 
 const router = useRouter()
 const route = useRoute()
 const solution = ref<ISolutionData | null>(null)
+const solutionId = ref<number>(Number(route.params.id))
 
 onMounted(() => {
   const projectId = Number(route.params.id)
-  solution.value = solutionsData.find(p => p.id === projectId) || null
+  solution.value = solutions.value.find(p => p.id === projectId) || null
 })
 
 const goBack = () => {
   router.push('/solutions')
+}
+
+const gotoTask = () => {
+  router.push(`/tasks/${solutionId.value}`)
 }
 </script>
 
@@ -95,13 +96,18 @@ const goBack = () => {
   margin: 0 auto;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .card-header h2 {
   margin: 0;
   color: #303133;
 }
 
 .project-content {
-  margin-top: 20px;
 }
 
 .solution-section {
