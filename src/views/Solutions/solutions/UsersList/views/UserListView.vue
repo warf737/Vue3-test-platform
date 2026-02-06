@@ -135,7 +135,7 @@ const initAccountForm = (account: IAccount) => {
           field.key,
           field.key === 'label'
             ? account.label && account.label.length > 0
-              ? account.label.join(', ')
+              ? account.label.join(';')
               : ''
             : field.key === 'type'
               ? accountType
@@ -220,10 +220,20 @@ const saveAccountToStore = async (accountId: number) => {
     }
 
     // Валидация прошла успешно, сохраняем
+    // Обработка поля label: разбиваем строку по ; в массив
+    const labelArray =
+      form.label && form.label.trim()
+        ? form.label
+            .split(';')
+            .map((item: string) => item.trim())
+            .filter((item: string) => item.length > 0)
+        : []
+
     const accountData: Partial<IAccount> = {
       type: (form.type === 'ldap' ? 'LDAP' : 'local') as 'local' | 'LDAP',
       login: form.login?.trim() || '',
       password: form.type === 'ldap' ? null : form.password || undefined,
+      label: labelArray,
     }
 
     store.updateAccount(accountId, accountData)
