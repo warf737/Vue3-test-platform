@@ -9,7 +9,11 @@ export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref<IAccount[]>([])
 
   const addAccount = (account: IAccount): void => {
-    accounts.value.push(account)
+    const accountWithId: IAccount = {
+      ...account,
+      id: account.id || Date.now(),
+    }
+    accounts.value.push(accountWithId)
   }
 
   const removeAccount = (id: number): void => {

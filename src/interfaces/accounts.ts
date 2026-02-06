@@ -1,6 +1,6 @@
 export interface IAccount {
   id?: number
-  label: []
+  label: string[]
   type: 'local' | 'LDAP'
   login: string
   password?: string

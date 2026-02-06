@@ -6,16 +6,6 @@ export const routes: Array<RouteRecordRaw> = [
     name: 'users-list-home',
     component: () => import('../views/UserListView.vue'),
   },
-  {
-    path: 'create',
-    name: 'users-list-create',
-    component: () => import('../views/CreateView.vue'),
-  },
-  {
-    path: 'edit',
-    name: 'users-list-edit',
-    component: () => import('../views/EditView.vue'),
-  },
 ]
 
 /**
