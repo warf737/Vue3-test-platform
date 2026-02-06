@@ -137,7 +137,7 @@ const initAccountForm = (account: IAccount) => {
           field.key,
           field.key === 'label'
             ? account.label && account.label.length > 0
-              ? account.label.join(';')
+              ? account.label.map(item => item.text).join(';')
               : ''
             : field.key === 'type'
               ? accountType
@@ -225,13 +225,14 @@ const saveAccountToStore = async (accountId: number) => {
     await formRef.validate()
 
     // Валидация прошла успешно, сохраняем
-    // Обработка поля label: разбиваем строку по ; в массив
+    // Обработка поля label: разбиваем строку по ; в массив объектов
     const labelArray =
       form.label && form.label.trim()
         ? form.label
             .split(';')
             .map((item: string) => item.trim())
             .filter((item: string) => item.length > 0)
+            .map((item: string) => ({ text: item }))
         : []
 
     const accountData: IAccount = {
