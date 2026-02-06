@@ -17,7 +17,7 @@
         </div>
 
         <el-form
-          v-for="account in accounts"
+          v-for="account in currentAccounts"
           :key="account.id"
           :ref="(el: FormInstance | null) => setFormRef(account.id!, el)"
           :model="getAccountForm(account.id!)"
@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -93,7 +93,9 @@ import { accountFields } from '../constants.ts'
 import type { IAccount } from '@/interfaces/accounts'
 
 const store = useAccountsStore()
-const accounts = computed(() => store.accounts)
+
+// Локальное состояние для отображения учетных записей
+const currentAccounts = ref<IAccount[]>([])
 
 // Формы для каждой учетной записи
 const accountForms = reactive<Record<number, Record<string, any>>>({})
@@ -152,7 +154,7 @@ const initAccountForm = (account: IAccount) => {
 
 // Получение формы для конкретной записи
 const getAccountForm = (accountId: number): Record<string, any> => {
-  const account = store.getAccountById(accountId)
+  const account = currentAccounts.value.find(acc => acc.id === accountId)
   if (account && !accountForms[accountId]) {
     initAccountForm(account)
   }
@@ -161,7 +163,11 @@ const getAccountForm = (accountId: number): Record<string, any> => {
 
 // Инициализация всех форм при монтировании
 onMounted(() => {
-  accounts.value.forEach(account => {
+  // Загружаем данные из стора в локальное состояние
+  currentAccounts.value = [...store.accounts]
+
+  // Инициализируем формы для всех записей
+  currentAccounts.value.forEach(account => {
     if (account.id) {
       initAccountForm(account)
     }
@@ -170,17 +176,21 @@ onMounted(() => {
 
 // Обработчик добавления новой записи
 const handleAddAccount = () => {
+  // Создаем новую запись и добавляем только в локальное состояние
   const newAccount: IAccount = {
+    id: Date.now(),
     label: [],
     type: 'local',
     login: '',
     password: '',
   }
-  store.addAccount(newAccount)
+
+  // Добавляем запись только в currentAccounts
+  currentAccounts.value.push(newAccount)
+
   // Инициализируем форму для новой записи
-  const addedAccount = accounts.value[accounts.value.length - 1]
-  if (addedAccount && addedAccount.id) {
-    initAccountForm(addedAccount)
+  if (newAccount.id) {
+    initAccountForm(newAccount)
   }
 }
 
@@ -212,12 +222,7 @@ const saveAccountToStore = async (accountId: number) => {
   }
 
   try {
-    const isValid = await formRef.validate()
-
-    if (!isValid) {
-      // Валидация не прошла, не сохраняем
-      return
-    }
+    await formRef.validate()
 
     // Валидация прошла успешно, сохраняем
     // Обработка поля label: разбиваем строку по ; в массив
@@ -229,26 +234,54 @@ const saveAccountToStore = async (accountId: number) => {
             .filter((item: string) => item.length > 0)
         : []
 
-    const accountData: Partial<IAccount> = {
+    const accountData: IAccount = {
+      id: accountId,
       type: (form.type === 'ldap' ? 'LDAP' : 'local') as 'local' | 'LDAP',
       login: form.login?.trim() || '',
       password: form.type === 'ldap' ? null : form.password || undefined,
       label: labelArray,
     }
 
-    store.updateAccount(accountId, accountData)
+    // Обновляем запись в currentAccounts
+    const accountIndex = currentAccounts.value.findIndex(acc => acc.id === accountId)
+    if (accountIndex !== -1) {
+      currentAccounts.value[accountIndex] = accountData
+    }
+
+    // Проверяем, существует ли запись в сторе
+    const existingAccount = store.getAccountById(accountId)
+    if (existingAccount) {
+      // Обновляем существующую запись в сторе
+      store.updateAccount(accountId, accountData)
+    } else {
+      // Добавляем новую запись в стор
+      store.addAccount(accountData)
+    }
+
     ElNotification({
       message: 'Изменения успешно сохранены',
       type: 'success',
     })
   } catch (error) {
-    return
+    console.log({ error })
   }
 }
 
 // Обработчик удаления записи
 const handleRemoveAccount = (id: number) => {
-  store.removeAccount(id)
+  // Удаляем из локального состояния
+  const accountIndex = currentAccounts.value.findIndex(acc => acc.id === id)
+  if (accountIndex !== -1) {
+    currentAccounts.value.splice(accountIndex, 1)
+  }
+
+  // Удаляем из стора, если запись там есть
+  const existingAccount = store.getAccountById(id)
+  if (existingAccount) {
+    store.removeAccount(id)
+  }
+
+  // Очищаем формы и рефы
   delete accountForms[id]
   delete formRefs[id]
 }
