@@ -4,10 +4,7 @@
       <template #header>
         <div class="header">
           <h3>Учетные записи</h3>
-          <el-button
-            :icon="Plus"
-            @click="addAccount({ label: [], type: 'local', login: '', password: '' })"
-          />
+          <el-button :icon="Plus" @click="handleAddAccount" />
         </div>
       </template>
       <div class="content">
@@ -21,14 +18,14 @@
             <template #default="{ row }">
               <el-input
                 v-if="field.view_as === 'input'"
-                v-model="formInline[field.key]"
+                v-model="getAccountForm(row.id!)[field.key]"
                 size="small"
                 :placeholder="field.label"
                 clearable
               />
               <el-input
                 v-else-if="field.view_as === 'input-password'"
-                v-model="formInline[field.key]"
+                v-model="getAccountForm(row.id!)[field.key]"
                 type="password"
                 size="small"
                 :placeholder="field.label"
@@ -37,7 +34,7 @@
               />
               <el-select
                 v-else-if="field.view_as === 'select'"
-                v-model="formInline[field.key]"
+                v-model="getAccountForm(row.id!)[field.key]"
                 size="small"
                 :placeholder="field.label"
               >
@@ -52,7 +49,7 @@
           </el-table-column>
           <el-table-column width="150">
             <template #default="{ row }">
-              <el-button type="danger" size="small" @click="removeAccount(row.id!)">
+              <el-button type="danger" size="small" @click="handleRemoveAccount(row.id!)">
                 Удалить
               </el-button>
             </template>
@@ -64,30 +61,80 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
+import { reactive, computed, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { useAccountsStore } from '../store/index.ts'
 import { accountFields } from '../constants.ts'
+import type { IAccount } from '@/interfaces/accounts'
 
-const { addAccount, removeAccount, accounts } = useAccountsStore()
+const store = useAccountsStore()
+const accounts = computed(() => store.accounts)
 
-const formInline = reactive<Record<string, any>>({
-  label: '',
-  login: '',
-  type: '',
-  password: '',
+// Формы для каждой учетной записи
+const accountForms = reactive<Record<number, Record<string, any>>>({})
+
+const initAccountForm = (account: IAccount) => {
+  if (!account.id) return
+
+  if (!accountForms[account.id]) {
+    accountForms[account.id] = reactive(
+      Object.fromEntries(
+        accountFields.map(field => [
+          field.key,
+          field.key === 'label'
+            ? account.label && account.label.length > 0
+              ? account.label.join(', ')
+              : ''
+            : field.key === 'type'
+              ? account.type === 'LDAP'
+                ? 'ldap'
+                : 'local'
+              : account[field.key as keyof IAccount] || field.initial || '',
+        ])
+      )
+    )
+  }
+}
+
+// Получение формы для конкретной записи
+const getAccountForm = (accountId: number): Record<string, any> => {
+  const account = store.getAccountById(accountId)
+  if (account && !accountForms[accountId]) {
+    initAccountForm(account)
+  }
+  return accountForms[accountId] || {}
+}
+
+// Инициализация всех форм при монтировании
+onMounted(() => {
+  accounts.value.forEach(account => {
+    if (account.id) {
+      initAccountForm(account)
+    }
+  })
 })
 
-// // Функция для получения ширины столбца
-// const getColumnWidth = (key: string): number => {
-//   const widths: Record<string, number> = {
-//     label: 200,
-//     type: 150,
-//     login: 200,
-//     password: 200,
-//   }
-//   return widths[key] || 150
-// }
+// Обработчик добавления новой записи
+const handleAddAccount = () => {
+  const newAccount: IAccount = {
+    label: [],
+    type: 'local',
+    login: '',
+    password: '',
+  }
+  store.addAccount(newAccount)
+  // Инициализируем форму для новой записи
+  const addedAccount = accounts.value[accounts.value.length - 1]
+  if (addedAccount && addedAccount.id) {
+    initAccountForm(addedAccount)
+  }
+}
+
+// Обработчик удаления записи
+const handleRemoveAccount = (id: number) => {
+  store.removeAccount(id)
+  delete accountForms[id]
+}
 </script>
 
 <style scoped>
