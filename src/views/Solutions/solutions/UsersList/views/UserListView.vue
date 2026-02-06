@@ -21,6 +21,7 @@
                 v-model="getAccountForm(row.id!)[field.key]"
                 size="small"
                 :placeholder="field.label"
+                @blur="() => handleFieldBlur(row.id!, field.key)"
               />
               <el-input
                 v-else-if="
@@ -31,6 +32,7 @@
                 size="small"
                 :placeholder="field.label"
                 show-password
+                @blur="() => handleFieldBlur(row.id!, field.key)"
               />
               <el-select
                 v-else-if="field.view_as === 'select'"
@@ -140,6 +142,35 @@ const handleTypeChange = (accountId: number, value: string) => {
   if (value === 'ldap') {
     form.password = null
   }
+  saveAccountToStore(accountId)
+}
+
+// Обработчик потери фокуса для полей
+const handleFieldBlur = (accountId: number, fieldKey: string) => {
+  saveAccountToStore(accountId)
+}
+
+// Сохранение учетной записи в стор
+const saveAccountToStore = (accountId: number) => {
+  const form = getAccountForm(accountId)
+  if (!form || Object.keys(form).length === 0) return
+
+  // Преобразуем данные формы в IAccount
+  const labelValue = form.label
+  const labelArray: string[] = Array.isArray(labelValue)
+    ? labelValue
+    : labelValue
+      ? [String(labelValue)]
+      : []
+
+  const accountData: Partial<IAccount> = {
+    label: labelArray,
+    type: (form.type === 'ldap' ? 'LDAP' : 'local') as 'local' | 'LDAP',
+    login: form.login?.trim() || '',
+    password: form.type === 'ldap' ? null : form.password || undefined,
+  }
+
+  store.updateAccount(accountId, accountData)
 }
 
 // Обработчик удаления записи
