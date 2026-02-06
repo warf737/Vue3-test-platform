@@ -9,4 +9,5 @@ export interface IFormField {
   required?: boolean
   disabled?: boolean
   width?: number
+  maxLength?: number
 }

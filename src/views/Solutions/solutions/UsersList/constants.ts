@@ -6,6 +6,7 @@ export const accountFields: IFormField[] = [
     label: 'Метка',
     view_as: 'input',
     initial: '',
+    maxLength: 50,
   },
   {
     key: 'type',
@@ -23,11 +24,13 @@ export const accountFields: IFormField[] = [
     view_as: 'input',
     initial: '',
     required: true,
+    maxLength: 100,
   },
   {
     key: 'password',
     label: 'Пароль',
     view_as: 'input-password',
     initial: '',
+    maxLength: 100,
   },
 ]
