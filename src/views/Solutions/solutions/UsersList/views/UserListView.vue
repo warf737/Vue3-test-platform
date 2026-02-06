@@ -21,22 +21,23 @@
                 v-model="getAccountForm(row.id!)[field.key]"
                 size="small"
                 :placeholder="field.label"
-                clearable
               />
               <el-input
-                v-else-if="field.view_as === 'input-password'"
+                v-else-if="
+                  field.view_as === 'input-password' && getAccountForm(row.id!).type !== 'ldap'
+                "
                 v-model="getAccountForm(row.id!)[field.key]"
                 type="password"
                 size="small"
                 :placeholder="field.label"
                 show-password
-                clearable
               />
               <el-select
                 v-else-if="field.view_as === 'select'"
                 v-model="getAccountForm(row.id!)[field.key]"
                 size="small"
                 :placeholder="field.label"
+                @change="(value: string) => handleTypeChange(row.id!, value)"
               >
                 <el-option
                   v-for="option in field.options"
@@ -77,6 +78,7 @@ const initAccountForm = (account: IAccount) => {
   if (!account.id) return
 
   if (!accountForms[account.id]) {
+    const accountType = account.type === 'LDAP' ? 'ldap' : 'local'
     accountForms[account.id] = reactive(
       Object.fromEntries(
         accountFields.map(field => [
@@ -86,10 +88,12 @@ const initAccountForm = (account: IAccount) => {
               ? account.label.join(', ')
               : ''
             : field.key === 'type'
-              ? account.type === 'LDAP'
-                ? 'ldap'
-                : 'local'
-              : account[field.key as keyof IAccount] || field.initial || '',
+              ? accountType
+              : field.key === 'password'
+                ? accountType === 'ldap'
+                  ? null
+                  : account[field.key as keyof IAccount] || field.initial || ''
+                : account[field.key as keyof IAccount] || field.initial || '',
         ])
       )
     )
@@ -127,6 +131,14 @@ const handleAddAccount = () => {
   const addedAccount = accounts.value[accounts.value.length - 1]
   if (addedAccount && addedAccount.id) {
     initAccountForm(addedAccount)
+  }
+}
+
+// Обработчик изменения типа записи
+const handleTypeChange = (accountId: number, value: string) => {
+  const form = getAccountForm(accountId)
+  if (value === 'ldap') {
+    form.password = null
   }
 }
 
