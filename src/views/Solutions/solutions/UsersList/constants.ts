@@ -30,9 +30,4 @@ export const accountFields: IFormField[] = [
     view_as: 'input-password',
     initial: '',
   },
-  {
-    key: 'delete',
-    icon: 'delete',
-    view_as: 'icon',
-  },
 ]

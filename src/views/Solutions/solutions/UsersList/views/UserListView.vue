@@ -4,32 +4,90 @@
       <template #header>
         <div class="header">
           <h3>Учетные записи</h3>
-          <el-button :icon="Plus" @click="navigateTo('create')" />
+          <el-button
+            :icon="Plus"
+            @click="addAccount({ label: [], type: 'local', login: '', password: '' })"
+          />
         </div>
       </template>
       <div class="content">
-        <p>Это изолированный Vue-модуль с собственным роутингом, store и компонентами.</p>
-        <div class="actions">
-          <el-button type="default" @click="navigateTo('edit')">
-            Перейти к редактированию
-          </el-button>
-        </div>
+        <el-table :data="accounts" class="accounts-table" style="width: 100%">
+          <el-table-column
+            v-for="field in accountFields"
+            :key="field.key"
+            :prop="field.key"
+            :label="field.label"
+          >
+            <template #default="{ row }">
+              <el-input
+                v-if="field.view_as === 'input'"
+                v-model="formInline[field.key]"
+                size="small"
+                :placeholder="field.label"
+                clearable
+              />
+              <el-input
+                v-else-if="field.view_as === 'input-password'"
+                v-model="formInline[field.key]"
+                type="password"
+                size="small"
+                :placeholder="field.label"
+                show-password
+                clearable
+              />
+              <el-select
+                v-else-if="field.view_as === 'select'"
+                v-model="formInline[field.key]"
+                size="small"
+                :placeholder="field.label"
+              >
+                <el-option
+                  v-for="option in field.options"
+                  :key="option.value"
+                  :label="option.label"
+                  :value="option.value"
+                />
+              </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column width="150">
+            <template #default="{ row }">
+              <el-button type="danger" size="small" @click="removeAccount(row.id!)">
+                Удалить
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useModuleRouter } from '@/composables/useModuleRouter.ts'
+import { reactive, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { useAccountsStore } from '../store/index.ts'
+import { accountFields } from '../constants.ts'
 
-const store = useAccountsStore()
-const accounts = store.accounts
+const { addAccount, removeAccount, accounts } = useAccountsStore()
 
-console.log({ accounts })
+const formInline = reactive<Record<string, any>>({
+  label: '',
+  login: '',
+  type: '',
+  password: '',
+})
 
-const { navigateTo } = useModuleRouter()
+// // Функция для получения ширины столбца
+// const getColumnWidth = (key: string): number => {
+//   const widths: Record<string, number> = {
+//     label: 200,
+//     type: 150,
+//     login: 200,
+//     password: 200,
+//   }
+//   return widths[key] || 150
+// }
 </script>
 
 <style scoped>
@@ -45,15 +103,5 @@ const { navigateTo } = useModuleRouter()
 
 .content {
   padding: 20px;
-}
-
-.content p {
-  margin-bottom: 20px;
-  color: #606266;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
 }
 </style>

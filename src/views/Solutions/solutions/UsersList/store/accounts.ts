@@ -16,10 +16,14 @@ export const useAccountsStore = defineStore('accounts', () => {
     accounts.value.push(accountWithId)
   }
 
-  const removeAccount = (id: number): void => {
-    const index = accounts.value.findIndex(account => account.id === id)
-    if (index !== -1) {
-      accounts.value.splice(index, 1)
+  const removeAccount = (id?: number): void => {
+    if (id) {
+      const index = accounts.value.findIndex(account => account.id === id)
+      if (index !== -1) {
+        accounts.value.splice(index, 1)
+      }
+    } else {
+      console.warn('Не удалось определить id удаляемой записи')
     }
   }
 
